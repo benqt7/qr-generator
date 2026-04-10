@@ -487,6 +487,87 @@
             }
         }
 
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #fff;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+            pointer-events: auto;
+            min-width: 260px;
+            max-width: 380px;
+            text-align: center;
+            justify-content: center;
+            animation: toastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, rgba(0, 210, 130, 0.25), rgba(0, 180, 110, 0.15));
+            border-color: rgba(0, 210, 130, 0.35);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, rgba(255, 80, 80, 0.25), rgba(200, 50, 50, 0.15));
+            border-color: rgba(255, 80, 80, 0.35);
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, rgba(58, 123, 213, 0.25), rgba(0, 210, 255, 0.15));
+            border-color: rgba(58, 123, 213, 0.35);
+        }
+
+        .toast-icon {
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .toast.hide {
+            animation: toastOut 0.35s ease forwards;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(10px) scale(0.92);
+            }
+        }
+
         /* Preview logo */
         .logo-preview {
             display: none;
@@ -616,11 +697,28 @@
         </div>
     </div>
 
+    <div class="toast-container" id="toastContainer"></div>
+
     <script>
         let qrCode = null;
         let selectedSize = 250;
         let logoFile = null;
         let useLogo = false;
+
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const icons = { success: '✅', error: '❌', info: '💡' };
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('hide');
+                toast.addEventListener('animationend', () => toast.remove());
+            }, duration);
+        }
 
         function selectLogoOption(option) {
             document.querySelectorAll('.logo-option').forEach(el => el.classList.remove('active'));
@@ -679,7 +777,7 @@
             const url = document.getElementById('urlInput').value.trim();
             
             if (!url) {
-                alert('الرجاء إدخال رابط صحيح');
+                showToast('الرجاء إدخال رابط صحيح', 'error');
                 return;
             }
 
@@ -824,10 +922,10 @@
                     await navigator.clipboard.write([
                         new ClipboardItem({ 'image/png': blob })
                     ]);
-                    alert('تم نسخ الباركود بنجاح! 📋');
+                    showToast('تم نسخ الباركود بنجاح!', 'success');
                 });
             } catch (err) {
-                alert('عذراً، لا يمكن نسخ الصورة في هذا المتصفح');
+                showToast('عذراً، لا يمكن نسخ الصورة في هذا المتصفح', 'error');
             }
         }
 
